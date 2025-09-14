@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Shared - {{appName}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #74b9ff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .note-info { background: white; border-left: 4px solid #74b9ff; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        .emoji { font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span class="emoji">📝</span> Note Shared!</h1>
+        <p>Kisi ne aapke saath note share kiya hai</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{recipientName}}! 👋</h2>
+        
+        <p><strong>{{sharedByName}}</strong> ne aapke saath ek note share kiya hai!</p>
+        
+        <div class="note-info">
+            <h3>📄 Note Details:</h3>
+            <p><strong>Title:</strong> {{noteTitle}}</p>
+            <p><strong>Shared by:</strong> {{sharedByName}}</p>
+        </div>
+        
+        <p>Note dekhne ke liye neeche button pe click karein:</p>
+        
+        <a href="{{noteUrl}}" class="button">View Note 👀</a>
+        
+        <p>{{appName}} mein aap:</p>
+        <ul>
+            <li>📖 Note read kar sakte hain</li>
+            <li>💬 Comments add kar sakte hain</li>
+            <li>🔄 Version history dekh sakte hain</li>
+            <li>📤 Dusre users ke saath share kar sakte hain</li>
+        </ul>
+        
+        <p>{{appName}} access karne ke liye:</p>
+        <a href="{{appUrl}}" style="color: #74b9ff;">{{appUrl}}</a>
+    </div>
+    
+    <div class="footer">
+        <p>{{appName}} Sharing Team 🤝</p>
+        <p>Happy collaborating! 🎉</p>
+    </div>
+</body>
+</html>

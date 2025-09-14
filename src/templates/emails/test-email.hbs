@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email - {{appName}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #00b894 0%, #00a085 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .info-box { background: white; border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        .emoji { font-size: 24px; }
+        .success { color: #00b894; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span class="emoji">🧪</span> Test Email</h1>
+        <p>{{appName}} - Email Configuration Test</p>
+    </div>
+    
+    <div class="content">
+        <h2 class="success">✅ Email Service Working!</h2>
+        
+        <p>Congratulations! Aapka email configuration sahi se kaam kar raha hai.</p>
+        
+        <div class="info-box">
+            <h3>📊 Test Details:</h3>
+            <p><strong>App Name:</strong> {{appName}}</p>
+            <p><strong>Timestamp:</strong> {{timestamp}}</p>
+            <p><strong>Status:</strong> <span class="success">SUCCESS ✅</span></p>
+        </div>
+        
+        <p>Ab aap ye email features use kar sakte hain:</p>
+        <ul>
+            <li>🎉 Welcome emails for new users</li>
+            <li>🔐 Password reset emails</li>
+            <li>📝 Note sharing notifications</li>
+            <li>📢 System notifications</li>
+            <li>✅ Email verification</li>
+        </ul>
+        
+        <p>Email service successfully configured hai! 🎊</p>
+    </div>
+    
+    <div class="footer">
+        <p>{{appName}} Development Team 👨‍💻</p>
+        <p>Email service is ready to use! 🚀</p>
+    </div>
+</body>
+</html>

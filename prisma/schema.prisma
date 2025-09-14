@@ -1,0 +1,228 @@
+// Prisma schema file - Notes Management System ke liye database structure
+// Yahan saare tables, relationships aur data types define kiye gaye hain
+
+// Generator configuration - TypeScript client banata hai database operations ke liye
+generator client {
+  provider = "prisma-client-js" // JavaScript/TypeScript client generate karta hai
+}
+
+// Database configuration - PostgreSQL database se connect karta hai
+datasource db {
+  provider  = "postgresql" // PostgreSQL database use kar rahe hain
+  url       = env("DATABASE_URL") // Connection string environment variable se
+  directUrl = env("DIRECT_URL") // Direct connection URL (optional)
+}
+
+// User roles enum - System mein access levels define karta hai
+enum Role {
+  USER // Normal user - basic permissions
+  ADMIN // Admin user - full system access
+}
+
+// Note visibility enum - Kaun note dekh sakta hai ye control karta hai
+enum Visibility {
+  PRIVATE // Sirf note banane wala dekh sakta hai
+  PUBLIC // Koi bhi dekh sakta hai
+  SHARED // Sirf selected users dekh sakte hain
+}
+
+// Shared notes ke permissions - User kya kar sakta hai ye define karta hai
+enum Permission {
+  VIEW // Sirf note dekh sakta hai (read-only)
+  EDIT // Note dekh aur edit bhi kar sakta hai
+}
+
+// Enum for notification types - categorizes different notification events
+enum NotificationType {
+  NOTE_CREATED // When a new note is created
+  NOTE_UPDATED // When a note is modified
+  NOTE_DELETED // When a note is deleted
+  NOTE_SHARED // When a note is shared with user
+  NOTE_ARCHIVED // When a note is archived
+}
+
+// Users table - stores all user account information
+model User {
+  id             String  @id @default(cuid()) // Unique identifier using CUID
+  email          String  @unique // Email address - must be unique across system
+  password       String // Hashed password using bcrypt
+  name           String // User's display name
+  phone          String? // Optional phone number
+  profilePicture String? // Optional profile picture URL
+  role           Role    @default(USER) // User role with default as USER
+  isActive       Boolean @default(true) // Account status flag
+  emailVerified  Boolean @default(false) // Email verification status
+
+  // Password reset functionality
+  resetToken    String? // Token for password reset
+  resetTokenExp DateTime? // Expiration time for reset token
+
+  // Refresh token for JWT authentication
+  refreshToken String? // Stored refresh token for session management
+
+  // Timestamps for audit trail
+  createdAt DateTime @default(now()) // Account creation timestamp
+  updatedAt DateTime @updatedAt // Last update timestamp
+
+  // Relationships - defines connections to other tables
+  notes         Note[] // Notes authored by this user (one-to-many)
+  noteUsers     NoteUser[] // Notes shared with this user (many-to-many through junction)
+  notifications Notification[] // Notifications for this user (one-to-many)
+  noteVersions  NoteVersion[] // Note versions created by this user (one-to-many)
+  noteViews     NoteView[] // Note views by this user (one-to-many)
+  activities    UserActivity[] // User activities (one-to-many)
+
+  // Database indexes for performance optimization
+  @@map("users") // Maps to 'users' table in database
+}
+
+// Notes table - stores all note content and metadata
+model Note {
+  id          String     @id @default(cuid()) // Unique identifier
+  title       String // Note title - required field
+  description String // Note content/body - required field
+  visibility  Visibility @default(PRIVATE) // Who can access this note
+  tags        String[] // Array of tags for categorization
+  archived    Boolean    @default(false) // Archive status flag
+
+  // Author relationship
+  authorId String // Foreign key to User table
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Timestamps for audit trail
+  createdAt DateTime @default(now()) // Note creation timestamp
+  updatedAt DateTime @updatedAt // Last modification timestamp
+
+  // Relationships for advanced features
+  versions  NoteVersion[] // Version history for this note (one-to-many)
+  noteUsers NoteUser[] // Users with access to this note (many-to-many through junction)
+  views     NoteView[] // Views of this note (one-to-many)
+
+  // Database indexes for query performance
+  @@index([authorId]) // Index on author for faster queries
+  @@index([visibility]) // Index on visibility for filtering
+  @@index([archived]) // Index on archived status
+  @@index([createdAt]) // Index on creation date for sorting
+  @@map("notes") // Maps to 'notes' table in database
+}
+
+// Note versions table - implements version control system
+model NoteVersion {
+  id          String @id @default(cuid()) // Unique identifier
+  noteId      String // Foreign key to Note table
+  title       String // Title at this version
+  description String // Content at this version
+  version     Int // Version number (incremental)
+
+  // Creator of this version
+  createdBy String // Foreign key to User table
+  createdAt DateTime @default(now()) // Version creation timestamp
+
+  // Relationships
+  note    Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  creator User @relation(fields: [createdBy], references: [id])
+
+  // Ensure unique version numbers per note
+  @@unique([noteId, version])
+  @@index([noteId]) // Index for faster version queries
+  @@map("note_versions") // Maps to 'note_versions' table
+}
+
+// Junction table for note sharing - implements many-to-many relationship
+model NoteUser {
+  noteId     String // Foreign key to Note table
+  userId     String // Foreign key to User table
+  permission Permission // What the user can do with the note
+
+  // Timestamps for audit trail
+  sharedAt DateTime @default(now()) // When access was granted
+
+  // Relationships
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Composite primary key - prevents duplicate sharing
+  @@id([noteId, userId])
+  @@map("note_users") // Maps to 'note_users' table
+}
+
+// Notifications table - stores user notifications
+model Notification {
+  id      String           @id @default(cuid()) // Unique identifier
+  userId  String // Foreign key to User table
+  type    NotificationType // Type of notification
+  message String // Notification message content
+  read    Boolean          @default(false) // Read status flag
+
+  // Optional metadata for rich notifications
+  metadata Json? // Additional data (note ID, etc.)
+
+  // Timestamps
+  createdAt DateTime @default(now()) // Notification creation time
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([userId]) // Index for user's notifications
+  @@index([read]) // Index for filtering read/unread
+  @@index([createdAt]) // Index for chronological ordering
+  @@map("notifications") // Maps to 'notifications' table
+}
+
+// Analytics tables for tracking user behavior and system metrics
+
+// Note views tracking - tracks when users view notes
+model NoteView {
+  id        String   @id @default(cuid()) // Unique identifier
+  noteId    String   // Foreign key to Note table
+  userId    String   // Foreign key to User table (who viewed)
+  viewedAt  DateTime @default(now()) // When the note was viewed
+  ipAddress String? // IP address for analytics
+  userAgent String? // User agent for analytics
+
+  // Relationships
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure unique views per user per note per day
+  @@unique([noteId, userId, viewedAt])
+  @@index([noteId]) // Index for note analytics
+  @@index([userId]) // Index for user analytics
+  @@index([viewedAt]) // Index for time-based queries
+  @@map("note_views") // Maps to 'note_views' table
+}
+
+// User activity tracking - tracks user actions
+model UserActivity {
+  id          String   @id @default(cuid()) // Unique identifier
+  userId      String   // Foreign key to User table
+  activity    String   // Type of activity (login, note_create, note_edit, etc.)
+  description String? // Human-readable description
+  metadata    Json? // Additional data about the activity
+  createdAt   DateTime @default(now()) // When the activity occurred
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([userId]) // Index for user's activities
+  @@index([activity]) // Index for activity type filtering
+  @@index([createdAt]) // Index for time-based queries
+  @@map("user_activities") // Maps to 'user_activities' table
+}
+
+// System metrics - tracks application performance
+model SystemMetric {
+  id        String   @id @default(cuid()) // Unique identifier
+  metric    String   // Metric name (response_time, memory_usage, etc.)
+  value     Float    // Metric value
+  unit      String? // Unit of measurement (ms, MB, etc.)
+  metadata  Json? // Additional context
+  createdAt DateTime @default(now()) // When the metric was recorded
+
+  // Indexes for performance
+  @@index([metric]) // Index for metric type filtering
+  @@index([createdAt]) // Index for time-based queries
+  @@map("system_metrics") // Maps to 'system_metrics' table
+}
