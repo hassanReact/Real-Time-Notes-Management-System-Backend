@@ -345,6 +345,4 @@ For support and questions:
 - [ ] Integration with external services (Google Drive, Dropbox)
 - [ ] Advanced notification preferences
 - [ ] Note categories and folders
-- [ ] Export functionality (PDF, Markdown, etc.)#   R e a l - T i m e - N o t e s - M a n a g e m e n t - S y s t e m - B a c k e n d  
- #   R e a l - T i m e - N o t e s - M a n a g e m e n t - S y s t e m - B a c k e n d  
- 
+- [ ] Export functionality (PDF, Markdown, etc.)#
